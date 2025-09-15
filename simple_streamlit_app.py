@@ -156,6 +156,12 @@ def send_email(recipient_email, subject, body):
         
         return True, "✅ [SUCCESS] Email transmitted successfully via neural network."
         
+    except smtplib.SMTPAuthenticationError as e:
+        return False, f"❌ [AUTH ERROR] Gmail authentication failed. Check App Password: {str(e)}"
+    except smtplib.SMTPRecipientsRefused as e:
+        return False, f"❌ [RECIPIENT ERROR] Invalid recipient email: {str(e)}"
+    except smtplib.SMTPServerDisconnected as e:
+        return False, f"❌ [CONNECTION ERROR] SMTP server disconnected: {str(e)}"
     except Exception as e:
         return False, f"❌ [ERROR] Email transmission failed: {str(e)}"
 
