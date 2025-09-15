@@ -159,12 +159,34 @@ def send_email(recipient_email, subject, body):
     except Exception as e:
         return False, f"❌ [ERROR] Email transmission failed: {str(e)}"
 
+def parse_email_request(user_input):
+    """사용자 입력에서 이메일 전송 요청을 파싱"""
+    email_keywords = ["메일", "이메일", "email", "mail", "보내", "send", "전송", "transmit"]
+    
+    if any(keyword in user_input.lower() for keyword in email_keywords):
+        # 간단한 이메일 정보 추출 (정규식 사용)
+        import re
+        
+        # 이메일 주소 추출
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        emails = re.findall(email_pattern, user_input)
+        
+        if emails:
+            return {
+                "action": "send_email",
+                "recipient": emails[0],
+                "subject": "AI Generated Message",
+                "body": user_input
+            }
+    
+    return None
+
 def get_chat_response(user_input):
     """OpenAI API를 사용하여 응답 생성"""
     try:
         # 시스템 메시지와 대화 기록 준비
         messages = [
-            {"role": "system", "content": "You are an advanced AI neural interface. Respond in a professional, technical manner with a hint of cyberpunk/hacker aesthetic. Use technical terminology and maintain an authoritative tone. You are a sophisticated AI system with deep knowledge across all domains."}
+            {"role": "system", "content": "You are an advanced AI neural interface with email transmission capabilities. You can send emails when users request it. When a user asks to send an email, ask for the recipient email, subject, and message content. Use professional, technical language with cyberpunk/hacker aesthetic. You have access to Gmail SMTP for secure email transmission."}
         ]
         
         # 최근 10개 메시지만 포함
@@ -276,12 +298,36 @@ def main():
                 st.markdown(prompt)
                 st.caption(f"⏰ {datetime.now().strftime('%H:%M:%S')}")
             
+            # 이메일 전송 요청 확인
+            email_request = parse_email_request(prompt)
+            
             # 챗봇 응답 생성
             with st.chat_message("assistant"):
                 with st.spinner("⚡ [NEURAL PROCESSING] Analyzing input..."):
                     response = get_chat_response(prompt)
-                    st.markdown(response)
-                    st.caption(f"⚡ {datetime.now().strftime('%H:%M:%S')} [NEURAL RESPONSE]")
+                    
+                    # 이메일 전송 요청이 있으면 처리
+                    if email_request:
+                        st.markdown(response)
+                        st.caption(f"⚡ {datetime.now().strftime('%H:%M:%S')} [NEURAL RESPONSE]")
+                        
+                        # 이메일 전송 실행
+                        with st.spinner("📧 [EMAIL TRANSMISSION] Establishing secure connection..."):
+                            success, email_result = send_email(
+                                email_request["recipient"],
+                                email_request["subject"],
+                                email_request["body"]
+                            )
+                            
+                            if success:
+                                st.success(email_result)
+                                response += f"\n\n{email_result}"
+                            else:
+                                st.error(email_result)
+                                response += f"\n\n{email_result}"
+                    else:
+                        st.markdown(response)
+                        st.caption(f"⚡ {datetime.now().strftime('%H:%M:%S')} [NEURAL RESPONSE]")
                 
                 # 챗봇 응답을 메시지에 추가
                 add_message("assistant", response)
