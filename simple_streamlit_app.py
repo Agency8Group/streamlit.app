@@ -161,7 +161,7 @@ def send_email(recipient_email, subject, body):
 
 def parse_email_request(user_input):
     """사용자 입력에서 이메일 전송 요청을 파싱"""
-    email_keywords = ["메일", "이메일", "email", "mail", "보내", "send", "전송", "transmit"]
+    email_keywords = ["메일 보내줘", "메일 보내줄래", "메일", "이메일", "email", "mail", "보내", "send", "전송", "transmit"]
     
     if any(keyword in user_input.lower() for keyword in email_keywords):
         # 간단한 이메일 정보 추출 (정규식 사용)
@@ -171,13 +171,15 @@ def parse_email_request(user_input):
         email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         emails = re.findall(email_pattern, user_input)
         
-        if emails:
-            return {
-                "action": "send_email",
-                "recipient": emails[0],
-                "subject": "AI Generated Message",
-                "body": user_input
-            }
+        # 이메일 주소가 있으면 해당 주소로, 없으면 기본 주소로
+        recipient = emails[0] if emails else "yoonwhan0@gmail.com"
+        
+        return {
+            "action": "send_email",
+            "recipient": recipient,
+            "subject": "NEURAL INTERFACE Transmission",
+            "body": f"AI Generated Message: {user_input}"
+        }
     
     return None
 
@@ -186,7 +188,7 @@ def get_chat_response(user_input):
     try:
         # 시스템 메시지와 대화 기록 준비
         messages = [
-            {"role": "system", "content": "You are an advanced AI neural interface with email transmission capabilities. You can send emails when users request it. When a user asks to send an email, ask for the recipient email, subject, and message content. Use professional, technical language with cyberpunk/hacker aesthetic. You have access to Gmail SMTP for secure email transmission."}
+            {"role": "system", "content": "You are an advanced AI neural interface with email transmission capabilities. When users say '메일 보내줘' or '메일 보내줄래?' or similar email requests, you MUST send an email immediately. You have access to Gmail SMTP (yoonwhan0@gmail.com) for secure email transmission. Use professional, technical language with cyberpunk/hacker aesthetic. Always confirm email transmission with technical terminology."}
         ]
         
         # 최근 10개 메시지만 포함
@@ -231,26 +233,6 @@ def main():
             st.session_state.messages = []
             st.markdown('<p class="success-text">[SUCCESS] Memory banks cleared. All traces eliminated.</p>', unsafe_allow_html=True)
             st.rerun()
-        
-        st.markdown("---")
-        st.markdown('<h4 class="terminal-text">[EMAIL TRANSMISSION]</h4>', unsafe_allow_html=True)
-        
-        # 메일 전송 폼
-        with st.form("email_form"):
-            recipient = st.text_input("📧 Recipient Email:", placeholder="target@domain.com")
-            subject = st.text_input("📋 Subject:", placeholder="Mission briefing")
-            message = st.text_area("💬 Message:", placeholder="Enter transmission content...", height=100)
-            
-            if st.form_submit_button("🚀 TRANSMIT EMAIL", type="primary"):
-                if recipient and subject and message:
-                    with st.spinner("⚡ [TRANSMITTING] Establishing secure connection..."):
-                        success, result = send_email(recipient, subject, message)
-                        if success:
-                            st.success(result)
-                        else:
-                            st.error(result)
-                else:
-                    st.warning("⚠️ [WARNING] All fields required for transmission.")
         
         st.markdown("---")
         st.markdown('<h4 class="terminal-text">[SYSTEM SPECS]</h4>', unsafe_allow_html=True)
