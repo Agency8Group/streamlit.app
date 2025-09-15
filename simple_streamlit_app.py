@@ -176,15 +176,11 @@ def parse_email_request(user_input):
     
     user_input_lower = user_input.lower().strip()
     
+    # 디버깅: 입력된 키워드 확인
+    matched_keywords = [keyword for keyword in email_request_keywords if keyword in user_input_lower]
+    
     # 정확한 요청 패턴만 매칭
-    if any(keyword in user_input_lower for keyword in email_request_keywords):
-        # 간단한 이메일 정보 추출 (정규식 사용)
-        import re
-        
-        # 이메일 주소 추출
-        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        emails = re.findall(email_pattern, user_input)
-        
+    if matched_keywords:
         # 수신자를 고정 주소로 설정
         recipient = "jyh@eibe.co.kr"
         
@@ -192,7 +188,8 @@ def parse_email_request(user_input):
             "action": "send_email",
             "recipient": recipient,
             "subject": "NEURAL INTERFACE Transmission",
-            "body": "AI will generate content for this email"
+            "body": "AI will generate content for this email",
+            "matched_keywords": matched_keywords  # 디버깅용
         }
     
     return None
@@ -296,6 +293,12 @@ def main():
             
             # 이메일 전송 요청 확인
             email_request = parse_email_request(prompt)
+            
+            # 디버깅 정보 표시
+            if email_request:
+                st.info(f"🔍 [DEBUG] Email request detected. Matched keywords: {email_request.get('matched_keywords', [])}")
+            else:
+                st.info("🔍 [DEBUG] No email request detected. Normal conversation mode.")
             
             # 챗봇 응답 생성
             with st.chat_message("assistant"):
