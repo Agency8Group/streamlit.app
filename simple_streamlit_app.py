@@ -7,6 +7,10 @@ Direct OpenAI API Integration - No Dependencies
 import streamlit as st
 import openai
 from datetime import datetime
+import smtplib
+import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # 페이지 설정
 st.set_page_config(
@@ -102,6 +106,15 @@ if not API_KEY:
     st.info("💡 [INFO] Please set OPENAI_API_KEY in Streamlit Cloud secrets or environment variables.")
     st.stop()
 
+# Gmail 설정 (Streamlit Secrets 또는 환경 변수에서 가져오기)
+try:
+    SENDER_EMAIL = st.secrets["GMAIL_USER"]
+    SENDER_PASSWORD = st.secrets["GMAIL_APP_PASSWORD"]
+except:
+    # 백업: 환경 변수에서 가져오기 (로컬 개발용)
+    SENDER_EMAIL = os.getenv("GMAIL_USER", "yoonwhan0@gmail.com")
+    SENDER_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "ewiyxncttelrokiw")
+
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -116,6 +129,35 @@ def add_message(role, content):
         "content": content,
         "timestamp": datetime.now().strftime("%H:%M:%S")
     })
+
+def send_email(recipient_email, subject, body):
+    """Gmail을 통해 이메일 전송"""
+    try:
+        # SMTP 서버 설정
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        
+        # 이메일 메시지 생성
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = recipient_email
+        msg['Subject'] = f"[NEURAL INTERFACE] {subject}"
+        
+        # 메시지 본문 추가
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # SMTP 서버 연결 및 이메일 전송
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(SENDER_EMAIL, recipient_email, text)
+        server.quit()
+        
+        return True, "✅ [SUCCESS] Email transmitted successfully via neural network."
+        
+    except Exception as e:
+        return False, f"❌ [ERROR] Email transmission failed: {str(e)}"
 
 def get_chat_response(user_input):
     """OpenAI API를 사용하여 응답 생성"""
@@ -169,12 +211,33 @@ def main():
             st.rerun()
         
         st.markdown("---")
+        st.markdown('<h4 class="terminal-text">[EMAIL TRANSMISSION]</h4>', unsafe_allow_html=True)
+        
+        # 메일 전송 폼
+        with st.form("email_form"):
+            recipient = st.text_input("📧 Recipient Email:", placeholder="target@domain.com")
+            subject = st.text_input("📋 Subject:", placeholder="Mission briefing")
+            message = st.text_area("💬 Message:", placeholder="Enter transmission content...", height=100)
+            
+            if st.form_submit_button("🚀 TRANSMIT EMAIL", type="primary"):
+                if recipient and subject and message:
+                    with st.spinner("⚡ [TRANSMITTING] Establishing secure connection..."):
+                        success, result = send_email(recipient, subject, message)
+                        if success:
+                            st.success(result)
+                        else:
+                            st.error(result)
+                else:
+                    st.warning("⚠️ [WARNING] All fields required for transmission.")
+        
+        st.markdown("---")
         st.markdown('<h4 class="terminal-text">[SYSTEM SPECS]</h4>', unsafe_allow_html=True)
         st.markdown("""
         <div class="terminal-text">
         - **NEURAL ENGINE**: GPT-3.5-turbo Core<br>
         - **MEMORY BANK**: Persistent conversation storage<br>
         - **REAL-TIME PROTOCOL**: Live communication interface<br>
+        - **EMAIL TRANSMISSION**: Gmail SMTP integration<br>
         - **LANGUAGE SUPPORT**: Multi-lingual neural processing<br>
         - **SECURITY LEVEL**: MAXIMUM
         </div>
