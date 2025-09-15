@@ -215,7 +215,7 @@ def get_chat_response(user_input):
         
         # OpenAI API 호출
         response = st.session_state.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=messages,
             temperature=0.7,
             max_tokens=1000
@@ -252,7 +252,7 @@ def main():
         st.markdown('<h4 class="terminal-text">[SYSTEM SPECS]</h4>', unsafe_allow_html=True)
         st.markdown("""
         <div class="terminal-text">
-        - **NEURAL ENGINE**: GPT-3.5-turbo Core<br>
+        - **NEURAL ENGINE**: GPT-4 Advanced Core<br>
         - **MEMORY BANK**: Persistent conversation storage<br>
         - **REAL-TIME PROTOCOL**: Live communication interface<br>
         - **EMAIL TRANSMISSION**: Gmail SMTP integration<br>
