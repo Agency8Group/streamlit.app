@@ -86,15 +86,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# API 키 설정 (환경 변수에서 가져오기)
+# API 키 설정 (Streamlit Secrets 또는 환경 변수에서 가져오기)
 import os
 
-# 환경 변수에서 API 키 가져오기 (Git 배포 시 안전)
-API_KEY = os.getenv("OPENAI_API_KEY", "")
+# Streamlit Secrets에서 API 키 가져오기 (Streamlit Cloud용)
+try:
+    API_KEY = st.secrets["OPENAI_API_KEY"]
+except:
+    # 백업: 환경 변수에서 가져오기 (로컬 개발용)
+    API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 # API 키가 없으면 오류 메시지 표시
 if not API_KEY:
-    st.error("⚠️ [SYSTEM ERROR] OPENAI_API_KEY environment variable not found!")
+    st.error("⚠️ [SYSTEM ERROR] OPENAI_API_KEY not found in secrets or environment variables!")
+    st.info("💡 [INFO] Please set OPENAI_API_KEY in Streamlit Cloud secrets or environment variables.")
     st.stop()
 
 # 세션 상태 초기화

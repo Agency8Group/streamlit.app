@@ -1,5 +1,6 @@
 # 환경 변수 파일
 .env
+.secrets.toml
 
 # Python 캐시
 __pycache__/
