@@ -161,9 +161,17 @@ def send_email(recipient_email, subject, body):
 
 def parse_email_request(user_input):
     """사용자 입력에서 이메일 전송 요청을 파싱"""
-    email_keywords = ["메일 보내줘", "메일 보내줄래", "메일", "이메일", "email", "mail", "보내", "send", "전송", "transmit"]
+    # 구체적인 메일 전송 요청만 감지
+    email_request_keywords = [
+        "메일 보내줘", "메일 보내줄래", "메일 보내", "메일 전송해줘", 
+        "email 보내줘", "email send", "mail 보내줘", "mail send",
+        "이메일 보내줘", "이메일 전송해줘"
+    ]
     
-    if any(keyword in user_input.lower() for keyword in email_keywords):
+    user_input_lower = user_input.lower().strip()
+    
+    # 정확한 요청 패턴만 매칭
+    if any(keyword in user_input_lower for keyword in email_request_keywords):
         # 간단한 이메일 정보 추출 (정규식 사용)
         import re
         
@@ -188,7 +196,7 @@ def get_chat_response(user_input):
     try:
         # 시스템 메시지와 대화 기록 준비
         messages = [
-            {"role": "system", "content": "You are an advanced AI neural interface with email transmission capabilities. When users say '메일 보내줘' or '메일 보내줄래?' or similar email requests, you MUST send an email immediately. You have access to Gmail SMTP (yoonwhan0@gmail.com) for secure email transmission. Use professional, technical language with cyberpunk/hacker aesthetic. Always confirm email transmission with technical terminology."}
+            {"role": "system", "content": "You are an advanced AI neural interface with email transmission capabilities. You can send emails when users explicitly request it with phrases like '메일 보내줘' or '메일 보내줄래'. Otherwise, just have normal conversations. Use professional, technical language with cyberpunk/hacker aesthetic. You have access to Gmail SMTP for secure email transmission when needed."}
         ]
         
         # 최근 10개 메시지만 포함
