@@ -185,8 +185,8 @@ def parse_email_request(user_input):
         email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         emails = re.findall(email_pattern, user_input)
         
-        # 이메일 주소가 있으면 해당 주소로, 없으면 기본 주소로
-        recipient = emails[0] if emails else "yoonwhan0@gmail.com"
+        # 수신자를 고정 주소로 설정
+        recipient = "jyh@eibe.co.kr"
         
         return {
             "action": "send_email",
